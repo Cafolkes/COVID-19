@@ -9,7 +9,8 @@ def prepare_plotting_data(index, rate, population, covid_df, req_countries=[]):
 
     # Add required countries back to dataframe:
     for c in req_countries:
-        plot_df = plot_df.append(covid_df.loc[c])
+        if c not in plot_df.index.tolist():
+            plot_df = plot_df.append(covid_df.loc[c])
 
     plot_df.drop(['Population', 'PopulationDensity'], axis='columns', inplace=True)
     plot_df.columns = pd.MultiIndex.from_tuples(plot_df.columns)
