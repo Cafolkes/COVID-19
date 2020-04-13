@@ -215,6 +215,36 @@ def plot_confirmed_daily_norm(covid_df, folder, min_confirmed_rate=0., min_popul
     plt.tight_layout()
     plt.savefig(folder + '/confirmed_daily_normalized.pdf', format='pdf', dpi='800')
 
+def plot_confirmed_daily_norm_timeshift(covid_df, folder, min_confirmed_rate=0., min_population=0, req_countries=[]):
+    index = covid_df.columns.tolist()[-3]
+    x_plot, plot_df = prepare_daily_data(index, min_confirmed_rate, min_population, covid_df, req_countries=req_countries, normalize=True)
+    country_lst = plot_df.index.tolist()
+    x, y = [], []
+    for ii, c in enumerate(country_lst):
+        y_plot = np.array(plot_df.loc[c, (slice(None), 'confirmed, daily')].tolist())
+        start_ind = np.min(np.where(y_plot >= 0.01))
+        x.append(x_plot[start_ind+1:])
+        y.append(y_plot[start_ind:])
+
+    plt.figure(figsize=(19, 12))
+    for ii, c in enumerate(country_lst):
+        x_plt = [ii for ii in range(len(x[ii]))]
+        y_plt = y[ii]
+        if c in req_countries:
+            lw = 3
+        else:
+            lw = 0.5
+        plt.plot(x_plt, y_plt, lw=lw, label=c + ', day 0 = ' + str(x[ii][0].date()))
+
+    plt.xlabel('Date')
+    plt.ylabel('Normalized daily new cases (/1000 inhabitants)')
+    plt.title('Daily new cases in countries with more than ' + str(min_confirmed_rate) + '/1000 confirmed cases per inhabitants, timeshifted')
+    plt.legend(loc='upper left')
+    plt.grid()
+    plt.tight_layout()
+    plt.savefig(folder + '/confirmed_daily_normalized_timeshifted.pdf', format='pdf', dpi='800')
+
+
 def plot_deaths_daily(covid_df, folder, min_confirmed_rate=0., min_population=0, req_countries=[]):
     index = covid_df.columns.tolist()[-3]
     x_plot, plot_df = prepare_daily_data(index, min_confirmed_rate, min_population, covid_df, req_countries=req_countries)
@@ -258,3 +288,32 @@ def plot_deaths_daily_norm(covid_df, folder, min_confirmed_rate=0., min_populati
     plt.grid()
     plt.tight_layout()
     plt.savefig(folder + '/deaths_daily_normalized.pdf', format='pdf', dpi='800')
+
+def plot_deaths_daily_norm_timeshift(covid_df, folder, min_confirmed_rate=0., min_population=0, req_countries=[]):
+    index = covid_df.columns.tolist()[-3]
+    x_plot, plot_df = prepare_daily_data(index, min_confirmed_rate, min_population, covid_df, req_countries=req_countries, normalize=True)
+    country_lst = plot_df.index.tolist()
+    x, y = [], []
+    for ii, c in enumerate(country_lst):
+        y_plot = np.array(plot_df.loc[c, (slice(None), 'deaths, daily')].tolist())
+        start_ind = np.min(np.where(y_plot >= 0.0001))
+        x.append(x_plot[start_ind + 1:])
+        y.append(y_plot[start_ind:])
+
+    plt.figure(figsize=(19, 12))
+    for ii, c in enumerate(country_lst):
+        x_plt = [ii for ii in range(len(x[ii]))]
+        y_plt = y[ii]
+        if c in req_countries:
+            lw = 3
+        else:
+            lw = 0.5
+        plt.plot(x_plt, y_plt, lw=lw, label=c + ', day 0 = ' + str(x[ii][0].date()))
+
+    plt.xlabel('Date')
+    plt.ylabel('Normalized daily new deaths (/1000 inhabitants)')
+    plt.title('Daily new deaths in countries with more than ' + str(min_confirmed_rate) + '/1000 confirmed cases per inhabitants, timeshifted')
+    plt.legend(loc='upper left')
+    plt.grid()
+    plt.tight_layout()
+    plt.savefig(folder + '/deaths_daily_normalized_timeshifted.pdf', format='pdf', dpi='800')

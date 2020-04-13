@@ -61,12 +61,10 @@ class CovidData:
         self.covid_data_global['Population'] = population
         self.covid_data_global['PopulationDensity'] = density
 
-        # Build US dataframe:
+    def _build_us_master_df(self):
+        # - Combine confirmed, deaths, and recovered in single dataframe:
         self.covid_data_us = self.confirmed_us_df.copy()
 
-    def _build_us_master_df(self):
-        # TODO: Similar structure as global_master
-        pass
 
     def _add_normalized_data(self):
         col_lst = self.covid_data_global.columns.tolist()[:-2]
