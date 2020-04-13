@@ -34,17 +34,19 @@ covid_data.build_master_dfs()
 
 
 date_str = str(date.today())
-folder = 'plots/' + date_str
-Path(folder).mkdir(parents=True, exist_ok=True)
+folder_global = 'plots/' + date_str + '/global'
+folder_us = 'plots/' + date_str + '/us'
+Path(folder_global).mkdir(parents=True, exist_ok=True)
+Path(folder_us).mkdir(parents=True, exist_ok=True)
 
-plot_confirmed(covid_data.covid_data_global, folder, min_confirmed_rate=min_confirmed_rate, min_population=min_population, req_countries=req_countries)
-plot_deaths(covid_data.covid_data_global, folder, min_death_rate=min_death_rate, min_population=min_population, req_countries=req_countries)
-plot_confirmed_timeshift(covid_data.covid_data_global, folder, min_confirmed_rate=min_confirmed_rate, min_population=min_population, req_countries=req_countries)
-plot_deaths_timeshift(covid_data.covid_data_global, folder, min_death_rate=min_death_rate, min_population=min_population, req_countries=req_countries)
+plot_confirmed(covid_data.covid_data_global, folder_global, min_confirmed_rate=min_confirmed_rate, min_population=min_population, req_countries=req_countries)
+plot_deaths(covid_data.covid_data_global, folder_global, min_death_rate=min_death_rate, min_population=min_population, req_countries=req_countries)
+plot_confirmed_timeshift(covid_data.covid_data_global, folder_global, min_confirmed_rate=min_confirmed_rate, min_population=min_population, req_countries=req_countries)
+plot_deaths_timeshift(covid_data.covid_data_global, folder_global, min_death_rate=min_death_rate, min_population=min_population, req_countries=req_countries)
 
-plot_confirmed_daily(covid_data.covid_data_global, folder, min_confirmed_rate=min_confirmed_rate, min_population=min_population, req_countries=req_countries)
-plot_confirmed_daily_norm(covid_data.covid_data_global, folder, min_confirmed_rate=min_confirmed_rate, min_population=min_population, req_countries=req_countries)
-plot_deaths_daily(covid_data.covid_data_global, folder, min_confirmed_rate=min_confirmed_rate, min_population=min_population, req_countries=req_countries)
-plot_deaths_daily_norm(covid_data.covid_data_global, folder, min_confirmed_rate=min_confirmed_rate, min_population=min_population, req_countries=req_countries)
+plot_confirmed_daily(covid_data.covid_data_global, folder_global, min_confirmed_rate=min_confirmed_rate, min_population=min_population, req_countries=req_countries)
+plot_confirmed_daily_norm(covid_data.covid_data_global, folder_global, min_confirmed_rate=min_confirmed_rate, min_population=min_population, req_countries=req_countries)
+plot_deaths_daily(covid_data.covid_data_global, folder_global, min_confirmed_rate=min_confirmed_rate, min_population=min_population, req_countries=req_countries)
+plot_deaths_daily_norm(covid_data.covid_data_global, folder_global, min_confirmed_rate=min_confirmed_rate, min_population=min_population, req_countries=req_countries)
 
 
