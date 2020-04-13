@@ -53,3 +53,4 @@ plot_deaths_daily_norm(covid_data.covid_data_global, folder_global, min_confirme
 plot_deaths_daily_norm_timeshift(covid_data.covid_data_global, folder_global, min_confirmed_rate=min_confirmed_rate, min_population=min_population, req_countries=req_countries)
 
 
+
