@@ -1,5 +1,5 @@
 from covid_data import CovidData
-from plot_utils import plot_confirmed, plot_deaths, plot_confirmed_timeshift, plot_deaths_timeshift
+from plot_utils import plot_confirmed, plot_deaths, plot_confirmed_timeshift, plot_deaths_timeshift, plot_confirmed_daily, plot_confirmed_daily_norm, plot_deaths_daily, plot_deaths_daily_norm
 from pathlib import Path
 from datetime import date
 
@@ -16,8 +16,8 @@ population_global = 'un_world_population_2019.csv'
 population_us = 'us_states_census.csv'
 
 # Data analysis parameters:
-min_confirmed_rate = 1.                     # Minimum rate of confirmed cases (confirmed/1000 inhabitants)
-min_death_rate = 0.05                       # Minimum rate of deaths (deaths/1000 inhabitants)
+min_confirmed_rate = 2.                     # Minimum rate of confirmed cases (confirmed/1000 inhabitants)
+min_death_rate = 0.1                       # Minimum rate of deaths (deaths/1000 inhabitants)
 min_population = 5e6                        # Minimum population of analyzed countries/states
 req_countries = ['Norway', 'Sweden', 'Denmark', 'United States of America']
 
@@ -41,5 +41,10 @@ plot_confirmed(covid_data.covid_data_global, folder, min_confirmed_rate=min_conf
 plot_deaths(covid_data.covid_data_global, folder, min_death_rate=min_death_rate, min_population=min_population, req_countries=req_countries)
 plot_confirmed_timeshift(covid_data.covid_data_global, folder, min_confirmed_rate=min_confirmed_rate, min_population=min_population, req_countries=req_countries)
 plot_deaths_timeshift(covid_data.covid_data_global, folder, min_death_rate=min_death_rate, min_population=min_population, req_countries=req_countries)
+
+plot_confirmed_daily(covid_data.covid_data_global, folder, min_confirmed_rate=min_confirmed_rate, min_population=min_population, req_countries=req_countries)
+plot_confirmed_daily_norm(covid_data.covid_data_global, folder, min_confirmed_rate=min_confirmed_rate, min_population=min_population, req_countries=req_countries)
+plot_deaths_daily(covid_data.covid_data_global, folder, min_confirmed_rate=min_confirmed_rate, min_population=min_population, req_countries=req_countries)
+plot_deaths_daily_norm(covid_data.covid_data_global, folder, min_confirmed_rate=min_confirmed_rate, min_population=min_population, req_countries=req_countries)
 
 
