@@ -3,7 +3,23 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 
-def prepare_timeseries_data(index, rate, population, covid_df, req_countries=[]):
+def plot_time_series(covid_data_df, folder, min_confirmed_rate, min_fatal_rate, min_population, req_countries=[], global_cases=True):
+    plot_confirmed(covid_data_df, folder, min_confirmed_rate=min_confirmed_rate, min_population=min_population, req_countries=req_countries, global_cases=global_cases)
+    plot_confirmed_norm(covid_data_df, folder, min_confirmed_rate=min_confirmed_rate, min_population=min_population, req_countries=req_countries, global_cases=global_cases)
+    plot_confirmed_timeshift(covid_data_df, folder, min_confirmed_rate=min_confirmed_rate, min_population=min_population, req_countries=req_countries, global_cases=global_cases)
+    plot_fatal(covid_data_df, folder, min_fatal_rate=min_fatal_rate, min_population=min_population, req_countries=req_countries, global_cases=global_cases)
+    plot_fatal_norm(covid_data_df, folder, min_fatal_rate=min_fatal_rate, min_population=min_population, req_countries=req_countries, global_cases=global_cases)
+    plot_fatal_timeshift(covid_data_df, folder, min_fatal_rate=min_fatal_rate, min_population=min_population, req_countries=req_countries, global_cases=global_cases)
+
+def plot_daily(covid_data_df, folder, min_confirmed_rate, min_fatal_rate, min_population, req_countries=[], global_cases=True):
+    plot_confirmed_daily(covid_data_df, folder, min_confirmed_rate=min_confirmed_rate, min_population=min_population, req_countries=req_countries, global_cases=global_cases)
+    plot_confirmed_daily_norm(covid_data_df, folder, min_confirmed_rate=min_confirmed_rate, min_population=min_population, req_countries=req_countries, global_cases=global_cases)
+    plot_confirmed_daily_norm_timeshift(covid_data_df, folder, min_confirmed_rate=min_confirmed_rate, min_population=min_population, req_countries=req_countries, global_cases=global_cases)
+    plot_fatal_daily(covid_data_df, folder, min_fatal_rate=min_fatal_rate, min_population=min_population, req_countries=req_countries, global_cases=global_cases)
+    plot_fatal_daily_norm(covid_data_df, folder, min_fatal_rate=min_fatal_rate, min_population=min_population, req_countries=req_countries, global_cases=global_cases)
+    plot_fatal_daily_norm_timeshift(covid_data_df, folder, min_fatal_rate=min_fatal_rate, min_population=min_population, req_countries=req_countries, global_cases=global_cases)
+
+def prepare_timeseries_data(index, rate, population, covid_df, req_countries=[], global_cases=True):
     plot_df = covid_df.loc[covid_df[index] >= rate]
     plot_df = plot_df.loc[plot_df['Population'] >= population / 1e3]
 
@@ -12,7 +28,10 @@ def prepare_timeseries_data(index, rate, population, covid_df, req_countries=[])
         if c not in plot_df.index.tolist():
             plot_df = plot_df.append(covid_df.loc[c])
 
-    plot_df.drop(['Population', 'PopulationDensity'], axis='columns', inplace=True)
+    if global_cases:
+        plot_df.drop(['Population', 'PopulationDensity'], axis='columns', inplace=True)
+    else:
+        plot_df.drop(['Population'], axis='columns', inplace=True)
     plot_df.columns = pd.MultiIndex.from_tuples(plot_df.columns)
 
     date_lst = np.array([d[0] for d in plot_df.columns.tolist()])
@@ -22,7 +41,7 @@ def prepare_timeseries_data(index, rate, population, covid_df, req_countries=[])
 
     return x_plot, plot_df
 
-def prepare_daily_data(index, rate, population, covid_df, req_countries=[], normalize=False):
+def prepare_daily_data(index, rate, population, covid_df, req_countries=[], global_cases=True, normalize=False):
     plot_df = covid_df.loc[covid_df[index] >= rate]
     plot_df = plot_df.loc[plot_df['Population'] >= population / 1e3]
 
@@ -31,31 +50,43 @@ def prepare_daily_data(index, rate, population, covid_df, req_countries=[], norm
         if c not in plot_df.index.tolist():
             plot_df = plot_df.append(covid_df.loc[c])
 
-    plot_df.drop(['Population', 'PopulationDensity'], axis='columns', inplace=True)
+    if global_cases:
+        plot_df.drop(['Population', 'PopulationDensity'], axis='columns', inplace=True)
+    else:
+        plot_df.drop(['Population'], axis='columns', inplace=True)
+
     plot_df.columns = pd.MultiIndex.from_tuples(plot_df.columns)
 
     country_lst = plot_df.index.tolist()
-    confirmed_daily_arr = np.empty((len(country_lst), int(plot_df.shape[1]/6)))
-    deaths_daily_arr = np.empty((len(country_lst), int(plot_df.shape[1] / 6)))
-    recovered_daily_arr = np.empty((len(country_lst), int(plot_df.shape[1] / 6)))
+    if global_cases:
+        confirmed_daily_arr = np.empty((len(country_lst), int(plot_df.shape[1]/6)))
+        fatal_daily_arr = np.empty((len(country_lst), int(plot_df.shape[1]/6)))
+        recovered_daily_arr = np.empty((len(country_lst), int(plot_df.shape[1]/6)))
+    else:
+        confirmed_daily_arr = np.empty((len(country_lst), int(plot_df.shape[1]/4)))
+        fatal_daily_arr = np.empty((len(country_lst), int(plot_df.shape[1]/4)))
+
     for ii, c in enumerate(country_lst):
         if normalize:
             confirmed_arr_tmp = np.array(plot_df.loc[c, (slice(None), 'confirmed, norm')].tolist())
-            deaths_arr_tmp = np.array(plot_df.loc[c, (slice(None), 'deaths, norm')].tolist())
-            recovered_arr_tmp = np.array(plot_df.loc[c, (slice(None), 'recovered, norm')].tolist())
+            fatal_arr_tmp = np.array(plot_df.loc[c, (slice(None), 'fatal, norm')].tolist())
+            if global_cases:
+                recovered_arr_tmp = np.array(plot_df.loc[c, (slice(None), 'recovered, norm')].tolist())
         else:
             confirmed_arr_tmp = np.array(plot_df.loc[c, (slice(None), 'confirmed')].tolist())
-            deaths_arr_tmp = np.array(plot_df.loc[c, (slice(None), 'deaths')].tolist())
-            recovered_arr_tmp = np.array(plot_df.loc[c, (slice(None), 'recovered')].tolist())
+            fatal_arr_tmp = np.array(plot_df.loc[c, (slice(None), 'fatal')].tolist())
+            if global_cases:
+                recovered_arr_tmp = np.array(plot_df.loc[c, (slice(None), 'recovered')].tolist())
 
         confirmed_daily_arr_tmp = np.diff(confirmed_arr_tmp)
         confirmed_daily_arr[ii,:] = np.concatenate((np.zeros((1,)),confirmed_daily_arr_tmp))
 
-        deaths_daily_arr_tmp = np.diff(deaths_arr_tmp)
-        deaths_daily_arr[ii,:] = np.concatenate((np.zeros((1,)), deaths_daily_arr_tmp))
+        fatal_daily_arr_tmp = np.diff(fatal_arr_tmp)
+        fatal_daily_arr[ii,:] = np.concatenate((np.zeros((1,)), fatal_daily_arr_tmp))
 
-        recovered_daily_arr_tmp = np.diff(recovered_arr_tmp)
-        recovered_daily_arr[ii,:] = np.concatenate((np.zeros((1,)), recovered_daily_arr_tmp))
+        if global_cases:
+            recovered_daily_arr_tmp = np.diff(recovered_arr_tmp)
+            recovered_daily_arr[ii,:] = np.concatenate((np.zeros((1,)), recovered_daily_arr_tmp))
 
     col_lst = plot_df.columns.tolist()
     jj = 0
@@ -67,8 +98,9 @@ def prepare_daily_data(index, rate, population, covid_df, req_countries=[], norm
             jj += 1
             cur_date.append(d[0])
             plot_df[d[0], 'confirmed, daily'] = confirmed_daily_arr[:, jj]
-            plot_df[d[0], 'deaths, daily'] = deaths_daily_arr[:, jj]
-            plot_df[d[0], 'recovered, daily'] = recovered_daily_arr[:, jj]
+            plot_df[d[0], 'fatal, daily'] = fatal_daily_arr[:, jj]
+            if global_cases:
+                plot_df[d[0], 'recovered, daily'] = recovered_daily_arr[:, jj]
 
     date_lst = np.array([d[0] for d in plot_df.columns.tolist()])
     date_lst = np.unique(date_lst).tolist()
@@ -77,10 +109,28 @@ def prepare_daily_data(index, rate, population, covid_df, req_countries=[], norm
 
     return x_plot, plot_df
 
-
-def plot_confirmed(covid_df, folder, min_confirmed_rate=0., min_population=0, req_countries=[]):
+def plot_confirmed(covid_df, folder, min_confirmed_rate=0., min_population=0, req_countries=[], global_cases=True):
     index = covid_df.columns.tolist()[-3]
-    x_plot, plot_df = prepare_timeseries_data(index, min_confirmed_rate, min_population, covid_df, req_countries=req_countries)
+    x_plot, plot_df = prepare_timeseries_data(index, min_confirmed_rate, min_population, covid_df, req_countries=req_countries, global_cases=global_cases)
+    country_lst = plot_df.index.tolist()
+
+    plt.figure(figsize=(19,12))
+    for c in country_lst:
+        y_plot = np.array(plot_df.loc[c, (slice(None), 'confirmed')].tolist())
+        start_ind = np.min(np.where(y_plot >= 0.01))
+        plt.plot(x_plot[start_ind:], y_plot[start_ind:], label=c)
+    plt.xlabel('Date')
+    plt.ylabel('Confirmed cases')
+    plt.title('Confirmed cases')
+    plt.legend(loc='upper left')
+    plt.grid()
+    plt.tight_layout()
+    plt.savefig(folder + '/confirmed.pdf', format='pdf', dpi='800')
+    plt.close()
+
+def plot_confirmed_norm(covid_df, folder, min_confirmed_rate=0., min_population=0, req_countries=[], global_cases=True):
+    index = covid_df.columns.tolist()[-3]
+    x_plot, plot_df = prepare_timeseries_data(index, min_confirmed_rate, min_population, covid_df, req_countries=req_countries, global_cases=global_cases)
     country_lst = plot_df.index.tolist()
 
     plt.figure(figsize=(19,12))
@@ -95,28 +145,11 @@ def plot_confirmed(covid_df, folder, min_confirmed_rate=0., min_population=0, re
     plt.grid()
     plt.tight_layout()
     plt.savefig(folder + '/confirmed_normalized.pdf', format='pdf', dpi='800')
+    plt.close()
 
-def plot_deaths(covid_df, folder, min_death_rate=0., min_population=0., req_countries=[]):
-    index = covid_df.columns.tolist()[-2]
-    x_plot, plot_df = prepare_timeseries_data(index, min_death_rate, min_population, covid_df, req_countries=req_countries)
-    country_lst = plot_df.index.tolist()
-
-    plt.figure(figsize=(19, 12))
-    for c in country_lst:
-        y_plot = np.array(plot_df.loc[c, (slice(None), 'confirmed, norm')].tolist())
-        start_ind = np.min(np.where(y_plot >= 0.01))
-        plt.plot(x_plot[start_ind:], y_plot[start_ind:], label=c)
-    plt.xlabel('Date')
-    plt.ylabel('Confirmed deaths (/1000 inhabitants')
-    plt.title('Confirmed deaths per 1000 inhabitants')
-    plt.legend(loc='upper left')
-    plt.grid()
-    plt.tight_layout()
-    plt.savefig(folder + '/deaths_normalized.pdf', format='pdf', dpi='800')
-
-def plot_confirmed_timeshift(covid_df, folder, min_confirmed_rate=0., min_population=0, req_countries=[]):
+def plot_confirmed_timeshift(covid_df, folder, min_confirmed_rate=0., min_population=0, req_countries=[], global_cases=True):
     index = covid_df.columns.tolist()[-3]
-    x_plot, plot_df = prepare_timeseries_data(index, min_confirmed_rate, min_population, covid_df, req_countries=req_countries)
+    x_plot, plot_df = prepare_timeseries_data(index, min_confirmed_rate, min_population, covid_df, req_countries=req_countries, global_cases=global_cases)
     country_lst = plot_df.index.tolist()
     x, y = [], []
     for ii, c in enumerate(country_lst):
@@ -141,16 +174,64 @@ def plot_confirmed_timeshift(covid_df, folder, min_confirmed_rate=0., min_popula
     plt.grid()
     plt.tight_layout()
     plt.savefig(folder + '/confirmed_normalized_timeshifted.pdf', format='pdf', dpi='800')
+    plt.close()
 
-def plot_deaths_timeshift(covid_df, folder, min_death_rate=0., min_population=0., req_countries=[]):
+def plot_fatal(covid_df, folder, min_fatal_rate=0., min_population=0., req_countries=[], global_cases=True):
     index = covid_df.columns.tolist()[-2]
-    x_plot, plot_df = prepare_timeseries_data(index, min_death_rate, min_population, covid_df, req_countries=req_countries)
+    x_plot, plot_df = prepare_timeseries_data(index, min_fatal_rate, min_population, covid_df, req_countries=req_countries, global_cases=global_cases)
+    country_lst = plot_df.index.tolist()
+
+    plt.figure(figsize=(19, 12))
+    for c in country_lst:
+        y_plot = np.array(plot_df.loc[c, (slice(None), 'fatal')].tolist())
+        try:
+            start_ind = np.min(np.where(y_plot >= 0.01))
+        except:
+            start_ind = 0
+        plt.plot(x_plot[start_ind:], y_plot[start_ind:], label=c)
+    plt.xlabel('Date')
+    plt.ylabel('Confirmed fatal (/1000 inhabitants')
+    plt.title('Confirmed fatal per 1000 inhabitants')
+    plt.legend(loc='upper left')
+    plt.grid()
+    plt.tight_layout()
+    plt.savefig(folder + '/fatal.pdf', format='pdf', dpi='800')
+    plt.close()
+
+def plot_fatal_norm(covid_df, folder, min_fatal_rate=0., min_population=0., req_countries=[], global_cases=True):
+    index = covid_df.columns.tolist()[-2]
+    x_plot, plot_df = prepare_timeseries_data(index, min_fatal_rate, min_population, covid_df, req_countries=req_countries, global_cases=global_cases)
+    country_lst = plot_df.index.tolist()
+
+    plt.figure(figsize=(19, 12))
+    for c in country_lst:
+        y_plot = np.array(plot_df.loc[c, (slice(None), 'fatal, norm')].tolist())
+        try:
+            start_ind = np.min(np.where(y_plot >= 0.01))
+        except:
+            start_ind = 0
+        plt.plot(x_plot[start_ind:], y_plot[start_ind:], label=c)
+    plt.xlabel('Date')
+    plt.ylabel('Confirmed fatal (/1000 inhabitants')
+    plt.title('Confirmed fatal per 1000 inhabitants')
+    plt.legend(loc='upper left')
+    plt.grid()
+    plt.tight_layout()
+    plt.savefig(folder + '/fatal_normalized.pdf', format='pdf', dpi='800')
+    plt.close()
+
+def plot_fatal_timeshift(covid_df, folder, min_fatal_rate=0., min_population=0., req_countries=[], global_cases=True):
+    index = covid_df.columns.tolist()[-2]
+    x_plot, plot_df = prepare_timeseries_data(index, min_fatal_rate, min_population, covid_df, req_countries=req_countries, global_cases=global_cases)
     country_lst = plot_df.index.tolist()
 
     x, y = [], []
     for ii, c in enumerate(country_lst):
-        y_plot = np.array(plot_df.loc[c, (slice(None), 'confirmed, norm')].tolist())
-        start_ind = np.min(np.where(y_plot >= 0.01))
+        y_plot = np.array(plot_df.loc[c, (slice(None), 'fatal, norm')].tolist())
+        try:
+            start_ind = np.min(np.where(y_plot >= 0.01))
+        except:
+            start_ind = 0
         x.append(x_plot[start_ind:])
         y.append(y_plot[start_ind:])
 
@@ -165,15 +246,16 @@ def plot_deaths_timeshift(covid_df, folder, min_death_rate=0., min_population=0.
         plt.plot(x_plt, y_plt, lw=lw, label=c + ', day 0 = ' + str(x[ii][0].date()))
     plt.xlabel('Days after day 0')
     plt.ylabel('Confirmed cases (/1000 inhabitants')
-    plt.title('Confirmed deaths per 1000 inhabitants, time synchronized')
+    plt.title('Confirmed fatal per 1000 inhabitants, time synchronized')
     plt.legend(loc='upper left')
     plt.grid()
     plt.tight_layout()
-    plt.savefig(folder + '/deaths_normalized_timeshifted.pdf', format='pdf', dpi='800')
+    plt.savefig(folder + '/fatal_normalized_timeshifted.pdf', format='pdf', dpi='800')
+    plt.close()
 
-def plot_confirmed_daily(covid_df, folder, min_confirmed_rate=0., min_population=0, req_countries=[]):
+def plot_confirmed_daily(covid_df, folder, min_confirmed_rate=0., min_population=0, req_countries=[], global_cases=True):
     index = covid_df.columns.tolist()[-3]
-    x_plot, plot_df = prepare_daily_data(index, min_confirmed_rate, min_population, covid_df, req_countries=req_countries)
+    x_plot, plot_df = prepare_daily_data(index, min_confirmed_rate, min_population, covid_df, req_countries=req_countries, global_cases=global_cases)
     country_lst = plot_df.index.tolist()
 
     plt.figure(figsize=(19,12))
@@ -192,10 +274,11 @@ def plot_confirmed_daily(covid_df, folder, min_confirmed_rate=0., min_population
     plt.grid()
     plt.tight_layout()
     plt.savefig(folder + '/confirmed_daily.pdf', format='pdf', dpi='800')
+    plt.close()
 
-def plot_confirmed_daily_norm(covid_df, folder, min_confirmed_rate=0., min_population=0, req_countries=[]):
+def plot_confirmed_daily_norm(covid_df, folder, min_confirmed_rate=0., min_population=0, req_countries=[], global_cases=True):
     index = covid_df.columns.tolist()[-3]
-    x_plot, plot_df = prepare_daily_data(index, min_confirmed_rate, min_population, covid_df, req_countries=req_countries, normalize=True)
+    x_plot, plot_df = prepare_daily_data(index, min_confirmed_rate, min_population, covid_df, req_countries=req_countries, global_cases=global_cases, normalize=True)
     country_lst = plot_df.index.tolist()
 
     plt.figure(figsize=(19,12))
@@ -214,10 +297,11 @@ def plot_confirmed_daily_norm(covid_df, folder, min_confirmed_rate=0., min_popul
     plt.grid()
     plt.tight_layout()
     plt.savefig(folder + '/confirmed_daily_normalized.pdf', format='pdf', dpi='800')
+    plt.close()
 
-def plot_confirmed_daily_norm_timeshift(covid_df, folder, min_confirmed_rate=0., min_population=0, req_countries=[]):
+def plot_confirmed_daily_norm_timeshift(covid_df, folder, min_confirmed_rate=0., min_population=0, req_countries=[], global_cases=True):
     index = covid_df.columns.tolist()[-3]
-    x_plot, plot_df = prepare_daily_data(index, min_confirmed_rate, min_population, covid_df, req_countries=req_countries, normalize=True)
+    x_plot, plot_df = prepare_daily_data(index, min_confirmed_rate, min_population, covid_df, req_countries=req_countries, global_cases=global_cases, normalize=True)
     country_lst = plot_df.index.tolist()
     x, y = [], []
     for ii, c in enumerate(country_lst):
@@ -243,60 +327,71 @@ def plot_confirmed_daily_norm_timeshift(covid_df, folder, min_confirmed_rate=0.,
     plt.grid()
     plt.tight_layout()
     plt.savefig(folder + '/confirmed_daily_normalized_timeshifted.pdf', format='pdf', dpi='800')
+    plt.close()
 
-
-def plot_deaths_daily(covid_df, folder, min_confirmed_rate=0., min_population=0, req_countries=[]):
+def plot_fatal_daily(covid_df, folder, min_fatal_rate=0., min_population=0, req_countries=[], global_cases=True):
     index = covid_df.columns.tolist()[-3]
-    x_plot, plot_df = prepare_daily_data(index, min_confirmed_rate, min_population, covid_df, req_countries=req_countries)
+    x_plot, plot_df = prepare_daily_data(index, min_fatal_rate, min_population, covid_df, req_countries=req_countries, global_cases=global_cases)
     country_lst = plot_df.index.tolist()
 
     plt.figure(figsize=(19,12))
     for c in country_lst:
-        y_plot = np.array(plot_df.loc[c, (slice(None), 'deaths, daily')].tolist())
-        start_ind = np.min(np.where(y_plot >= 0.01))
+        y_plot = np.array(plot_df.loc[c, (slice(None), 'fatal, daily')].tolist())
+        try:
+            start_ind = np.min(np.where(y_plot >= 0.0001))
+        except:
+            start_ind = 0
         if c in req_countries:
             lw = 3
         else:
             lw = 0.5
         plt.plot(x_plot[start_ind+1:], y_plot[start_ind:], lw=lw, label=c)
     plt.xlabel('Date')
-    plt.ylabel('Daily new deaths')
-    plt.title('Daily new deaths in countries with more than ' + str(min_confirmed_rate) + '/1000 confirmed cases per inhabitants')
+    plt.ylabel('Daily new fatal')
+    plt.title('Daily new fatal in countries with more than ' + str(min_fatal_rate) + '/1000 confirmed cases per inhabitants')
     plt.legend(loc='upper left')
     plt.grid()
     plt.tight_layout()
-    plt.savefig(folder + '/deaths_daily.pdf', format='pdf', dpi='800')
+    plt.savefig(folder + '/fatal_daily.pdf', format='pdf', dpi='800')
+    plt.close()
 
-def plot_deaths_daily_norm(covid_df, folder, min_confirmed_rate=0., min_population=0, req_countries=[]):
+def plot_fatal_daily_norm(covid_df, folder, min_fatal_rate=0., min_population=0, req_countries=[], global_cases=True):
     index = covid_df.columns.tolist()[-3]
-    x_plot, plot_df = prepare_daily_data(index, min_confirmed_rate, min_population, covid_df, req_countries=req_countries, normalize=True)
+    x_plot, plot_df = prepare_daily_data(index, min_fatal_rate, min_population, covid_df, req_countries=req_countries, global_cases=global_cases, normalize=True)
     country_lst = plot_df.index.tolist()
 
     plt.figure(figsize=(19,12))
     for c in country_lst:
-        y_plot = np.array(plot_df.loc[c, (slice(None), 'deaths, daily')].tolist())
-        start_ind = np.min(np.where(y_plot >= 0.0001))
+        y_plot = np.array(plot_df.loc[c, (slice(None), 'fatal, daily')].tolist())
+        try:
+            start_ind = np.min(np.where(y_plot >= 0.0001))
+        except:
+            start_ind = 0
         if c in req_countries:
             lw = 3
         else:
             lw = 0.5
         plt.plot(x_plot[start_ind+1:], y_plot[start_ind:], lw=lw, label=c)
     plt.xlabel('Date')
-    plt.ylabel('Normalized daily new deaths (/1000 inhabitants)')
-    plt.title('Daily new deaths in countries with more than ' + str(min_confirmed_rate) + '/1000 confirmed cases per inhabitants')
+    plt.ylabel('Normalized daily new fatal (/1000 inhabitants)')
+    plt.title('Daily new fatal in countries with more than ' + str(min_fatal_rate) + '/1000 fatal cases per inhabitants')
     plt.legend(loc='upper left')
     plt.grid()
     plt.tight_layout()
-    plt.savefig(folder + '/deaths_daily_normalized.pdf', format='pdf', dpi='800')
+    plt.savefig(folder + '/fatal_daily_normalized.pdf', format='pdf', dpi='800')
+    plt.close()
 
-def plot_deaths_daily_norm_timeshift(covid_df, folder, min_confirmed_rate=0., min_population=0, req_countries=[]):
+def plot_fatal_daily_norm_timeshift(covid_df, folder, min_fatal_rate=0., min_population=0, req_countries=[], global_cases=True):
     index = covid_df.columns.tolist()[-3]
-    x_plot, plot_df = prepare_daily_data(index, min_confirmed_rate, min_population, covid_df, req_countries=req_countries, normalize=True)
+    x_plot, plot_df = prepare_daily_data(index, min_fatal_rate, min_population, covid_df, req_countries=req_countries, global_cases=global_cases, normalize=True)
     country_lst = plot_df.index.tolist()
     x, y = [], []
     for ii, c in enumerate(country_lst):
-        y_plot = np.array(plot_df.loc[c, (slice(None), 'deaths, daily')].tolist())
-        start_ind = np.min(np.where(y_plot >= 0.0001))
+        y_plot = np.array(plot_df.loc[c, (slice(None), 'fatal, daily')].tolist())
+        try:
+            start_ind = np.min(np.where(y_plot >= 0.0001))
+        except:
+            start_ind = 0
         x.append(x_plot[start_ind + 1:])
         y.append(y_plot[start_ind:])
 
@@ -311,9 +406,10 @@ def plot_deaths_daily_norm_timeshift(covid_df, folder, min_confirmed_rate=0., mi
         plt.plot(x_plt, y_plt, lw=lw, label=c + ', day 0 = ' + str(x[ii][0].date()))
 
     plt.xlabel('Date')
-    plt.ylabel('Normalized daily new deaths (/1000 inhabitants)')
-    plt.title('Daily new deaths in countries with more than ' + str(min_confirmed_rate) + '/1000 confirmed cases per inhabitants, timeshifted')
+    plt.ylabel('Normalized daily new fatal (/1000 inhabitants)')
+    plt.title('Daily new fatal in countries with more than ' + str(min_fatal_rate) + '/1000 confirmed cases per inhabitants, timeshifted')
     plt.legend(loc='upper left')
     plt.grid()
     plt.tight_layout()
-    plt.savefig(folder + '/deaths_daily_normalized_timeshifted.pdf', format='pdf', dpi='800')
+    plt.savefig(folder + '/fatal_daily_normalized_timeshifted.pdf', format='pdf', dpi='800')
+    plt.close()

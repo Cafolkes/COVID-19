@@ -1,7 +1,5 @@
 from covid_data import CovidData
-from plot_utils import plot_confirmed, plot_deaths, plot_confirmed_timeshift, plot_deaths_timeshift, plot_confirmed_daily, \
-    plot_confirmed_daily_norm, plot_deaths_daily, plot_deaths_daily_norm, plot_confirmed_daily_norm_timeshift, \
-    plot_deaths_daily_norm_timeshift
+from plot_utils import plot_time_series, plot_daily
 from pathlib import Path
 from datetime import date
 
@@ -9,8 +7,8 @@ from datetime import date
 time_series_folder = 'csse_covid_19_data/csse_covid_19_time_series/'
 time_series_confirmed_us = 'time_series_covid19_confirmed_us.csv'
 time_series_confirmed_global = 'time_series_covid19_confirmed_global.csv'
-time_series_deaths_us = 'time_series_covid19_deaths_us.csv'
-time_series_deaths_global = 'time_series_covid19_deaths_global.csv'
+time_series_fatal_us = 'time_series_covid19_deaths_us.csv'
+time_series_fatal_global = 'time_series_covid19_deaths_global.csv'
 time_series_recovered_global = 'time_series_covid19_recovered_global.csv'
 
 static_folder = 'population_data/'
@@ -19,15 +17,17 @@ population_us = 'us_states_census.csv'
 
 # Data analysis parameters:
 min_confirmed_rate = 2.                     # Minimum rate of confirmed cases (confirmed/1000 inhabitants)
-min_death_rate = 0.1                        # Minimum rate of deaths (deaths/1000 inhabitants)
-min_population = 5e6                        # Minimum population of analyzed countries/states
+min_fatal_rate = 0.1                        # Minimum rate of fatal (fatal/1000 inhabitants)
+min_confirmed_rate_us = 0.1                     # Minimum rate of confirmed cases (confirmed/1000 inhabitants)
+min_fatal_rate_us = 0.05                        # Minimum rate of fatal (fatal/1000 inhabitants)
+min_population = 1e6                        # Minimum population of analyzed countries/states
 req_countries = ['Norway', 'Sweden', 'Denmark', 'United States of America']
 
 covid_data = CovidData(time_series_folder=time_series_folder,
                        time_series_confirmed_us=time_series_confirmed_us,
                        time_series_confirmed_global=time_series_confirmed_global,
-                       time_series_deaths_us=time_series_deaths_us,
-                       time_series_deaths_global=time_series_deaths_global,
+                       time_series_fatal_us=time_series_fatal_us,
+                       time_series_fatal_global=time_series_fatal_global,
                        time_series_recovered_global=time_series_recovered_global,
                        static_folder=static_folder,
                        population_global=population_global,
@@ -40,17 +40,10 @@ folder_us = 'plots/' + date_str + '/us'
 Path(folder_global).mkdir(parents=True, exist_ok=True)
 Path(folder_us).mkdir(parents=True, exist_ok=True)
 
-plot_confirmed(covid_data.covid_data_global, folder_global, min_confirmed_rate=min_confirmed_rate, min_population=min_population, req_countries=req_countries)
-plot_deaths(covid_data.covid_data_global, folder_global, min_death_rate=min_death_rate, min_population=min_population, req_countries=req_countries)
-plot_confirmed_timeshift(covid_data.covid_data_global, folder_global, min_confirmed_rate=min_confirmed_rate, min_population=min_population, req_countries=req_countries)
-plot_deaths_timeshift(covid_data.covid_data_global, folder_global, min_death_rate=min_death_rate, min_population=min_population, req_countries=req_countries)
+# Plot global cases:
+plot_time_series(covid_data.covid_data_global, folder_global, min_confirmed_rate=min_confirmed_rate, min_fatal_rate=min_fatal_rate, min_population=min_population, req_countries=req_countries)
+plot_daily(covid_data.covid_data_global, folder_global, min_confirmed_rate=min_confirmed_rate, min_fatal_rate=min_fatal_rate, min_population=min_population, req_countries=req_countries)
 
-plot_confirmed_daily(covid_data.covid_data_global, folder_global, min_confirmed_rate=min_confirmed_rate, min_population=min_population, req_countries=req_countries)
-plot_confirmed_daily_norm(covid_data.covid_data_global, folder_global, min_confirmed_rate=min_confirmed_rate, min_population=min_population, req_countries=req_countries)
-plot_confirmed_daily_norm_timeshift(covid_data.covid_data_global, folder_global, min_confirmed_rate=min_confirmed_rate, min_population=min_population, req_countries=req_countries)
-plot_deaths_daily(covid_data.covid_data_global, folder_global, min_confirmed_rate=min_confirmed_rate, min_population=min_population, req_countries=req_countries)
-plot_deaths_daily_norm(covid_data.covid_data_global, folder_global, min_confirmed_rate=min_confirmed_rate, min_population=min_population, req_countries=req_countries)
-plot_deaths_daily_norm_timeshift(covid_data.covid_data_global, folder_global, min_confirmed_rate=min_confirmed_rate, min_population=min_population, req_countries=req_countries)
-
-
-
+# Plot us cases:
+plot_time_series(covid_data.covid_data_us, folder_us, min_confirmed_rate=min_confirmed_rate_us, min_fatal_rate=min_fatal_rate_us, min_population=min_population, global_cases=False)
+plot_daily(covid_data.covid_data_us, folder_us, min_confirmed_rate=min_confirmed_rate_us, min_fatal_rate=min_fatal_rate_us, min_population=min_population, global_cases=False)
