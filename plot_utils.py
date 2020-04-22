@@ -11,13 +11,13 @@ def plot_time_series(covid_data_df, folder, min_confirmed_rate, min_fatal_rate, 
     plot_fatal_norm(covid_data_df, folder, min_fatal_rate=min_fatal_rate, min_population=min_population, req_areas=req_areas, global_cases=global_cases)
     plot_fatal_timeshift(covid_data_df, folder, min_fatal_rate=min_fatal_rate, min_population=min_population, req_areas=req_areas, global_cases=global_cases)
 
-def plot_daily(covid_data_df, folder, min_confirmed_rate, min_fatal_rate, min_population, req_areas=[], global_cases=True):
-    plot_confirmed_daily(covid_data_df, folder, min_confirmed_rate=min_confirmed_rate, min_population=min_population, req_areas=req_areas, global_cases=global_cases)
-    plot_confirmed_daily_norm(covid_data_df, folder, min_confirmed_rate=min_confirmed_rate, min_population=min_population, req_areas=req_areas, global_cases=global_cases)
-    plot_confirmed_daily_norm_timeshift(covid_data_df, folder, min_confirmed_rate=min_confirmed_rate, min_population=min_population, req_areas=req_areas, global_cases=global_cases)
-    plot_fatal_daily(covid_data_df, folder, min_fatal_rate=min_fatal_rate, min_population=min_population, req_areas=req_areas, global_cases=global_cases)
-    plot_fatal_daily_norm(covid_data_df, folder, min_fatal_rate=min_fatal_rate, min_population=min_population, req_areas=req_areas, global_cases=global_cases)
-    plot_fatal_daily_norm_timeshift(covid_data_df, folder, min_fatal_rate=min_fatal_rate, min_population=min_population, req_areas=req_areas, global_cases=global_cases)
+def plot_daily(covid_data_df, folder, min_confirmed_rate, min_fatal_rate, min_population, req_areas=[], global_cases=True, mov_avg_horizon=1):
+    plot_confirmed_daily(covid_data_df, folder, min_confirmed_rate=min_confirmed_rate, min_population=min_population, req_areas=req_areas, global_cases=global_cases, mov_avg_horizon=mov_avg_horizon)
+    plot_confirmed_daily_norm(covid_data_df, folder, min_confirmed_rate=min_confirmed_rate, min_population=min_population, req_areas=req_areas, global_cases=global_cases, mov_avg_horizon=mov_avg_horizon)
+    plot_confirmed_daily_norm_timeshift(covid_data_df, folder, min_confirmed_rate=min_confirmed_rate, min_population=min_population, req_areas=req_areas, global_cases=global_cases, mov_avg_horizon=mov_avg_horizon)
+    plot_fatal_daily(covid_data_df, folder, min_fatal_rate=min_fatal_rate, min_population=min_population, req_areas=req_areas, global_cases=global_cases, mov_avg_horizon=mov_avg_horizon)
+    plot_fatal_daily_norm(covid_data_df, folder, min_fatal_rate=min_fatal_rate, min_population=min_population, req_areas=req_areas, global_cases=global_cases, mov_avg_horizon=mov_avg_horizon)
+    plot_fatal_daily_norm_timeshift(covid_data_df, folder, min_fatal_rate=min_fatal_rate, min_population=min_population, req_areas=req_areas, global_cases=global_cases, mov_avg_horizon=mov_avg_horizon)
 
 def prepare_timeseries_data(index, rate, population, covid_df, req_areas=[], global_cases=True):
     plot_df = covid_df.loc[covid_df[index] >= rate]
@@ -108,6 +108,11 @@ def prepare_daily_data(index, rate, population, covid_df, req_areas=[], global_c
     x_plot = np.sort(dates)
 
     return x_plot, plot_df
+
+def moving_average(a, n=1) :
+    ret = np.cumsum(a, dtype=float)
+    ret[n:] = ret[n:] - ret[:-n]
+    return ret[n - 1:] / n
 
 def plot_confirmed(covid_df, folder, min_confirmed_rate=0., min_population=0, req_areas=[], global_cases=True):
     if global_cases:
@@ -287,17 +292,19 @@ def plot_fatal_timeshift(covid_df, folder, min_fatal_rate=0., min_population=0.,
     plt.savefig(folder + '/fatal_normalized_timeshifted.pdf', format='pdf', dpi='800')
     plt.close()
 
-def plot_confirmed_daily(covid_df, folder, min_confirmed_rate=0., min_population=0, req_areas=[], global_cases=True):
+def plot_confirmed_daily(covid_df, folder, min_confirmed_rate=0., min_population=0, req_areas=[], global_cases=True, mov_avg_horizon=1):
     if global_cases:
         index = covid_df.columns.tolist()[-3]
     else:
         index = covid_df.columns.tolist()[-2]
     x_plot, plot_df = prepare_daily_data(index, min_confirmed_rate, min_population, covid_df, req_areas=req_areas, global_cases=global_cases)
+    x_plot = x_plot[mov_avg_horizon-1:]
     country_lst = plot_df.index.tolist()
 
     plt.figure(figsize=(19,12))
     for c in country_lst:
         y_plot = np.array(plot_df.loc[c, (slice(None), 'confirmed, daily')].tolist())
+        y_plot = moving_average(y_plot, n=mov_avg_horizon)
         start_ind = np.min(np.where(y_plot >= 10))
         if c in req_areas:
             lw = 3
@@ -306,24 +313,26 @@ def plot_confirmed_daily(covid_df, folder, min_confirmed_rate=0., min_population
         plt.plot(x_plot[start_ind+1:], y_plot[start_ind:], lw=lw, label=c)
     plt.xlabel('Date')
     plt.ylabel('Daily new cases')
-    plt.title('Daily new cases, countries with more than ' + str(min_confirmed_rate) + ' cases per 1000 inhabitants')
+    plt.title('Daily new cases, countries with more than ' + str(min_confirmed_rate) + ' cases per 1000 inhabitants, ' + str(mov_avg_horizon) + ' step moving average')
     plt.legend(loc='upper left')
     plt.grid()
     plt.tight_layout()
     plt.savefig(folder + '/confirmed_daily.pdf', format='pdf', dpi='800')
     plt.close()
 
-def plot_confirmed_daily_norm(covid_df, folder, min_confirmed_rate=0., min_population=0, req_areas=[], global_cases=True):
+def plot_confirmed_daily_norm(covid_df, folder, min_confirmed_rate=0., min_population=0, req_areas=[], global_cases=True, mov_avg_horizon=1):
     if global_cases:
         index = covid_df.columns.tolist()[-3]
     else:
         index = covid_df.columns.tolist()[-2]
     x_plot, plot_df = prepare_daily_data(index, min_confirmed_rate, min_population, covid_df, req_areas=req_areas, global_cases=global_cases, normalize=True)
+    x_plot = x_plot[mov_avg_horizon - 1:]
     country_lst = plot_df.index.tolist()
 
     plt.figure(figsize=(19,12))
     for c in country_lst:
         y_plot = np.array(plot_df.loc[c, (slice(None), 'confirmed, daily')].tolist())
+        y_plot = moving_average(y_plot, n=mov_avg_horizon)
         start_ind = np.min(np.where(y_plot >= 0.01))
         if c in req_areas:
             lw = 3
@@ -332,23 +341,25 @@ def plot_confirmed_daily_norm(covid_df, folder, min_confirmed_rate=0., min_popul
         plt.plot(x_plot[start_ind+1:], y_plot[start_ind:], lw=lw, label=c)
     plt.xlabel('Date')
     plt.ylabel('New cases per 1000 inhabitants')
-    plt.title('Daily new cases per 1000 inhabitants, countries with more than ' + str(min_confirmed_rate) + ' cases per 1000 inhabitants')
+    plt.title('Daily new cases per 1000 inhabitants, countries with more than ' + str(min_confirmed_rate) + ' cases per 1000 inhabitants, ' + str(mov_avg_horizon) + ' step moving average')
     plt.legend(loc='upper left')
     plt.grid()
     plt.tight_layout()
     plt.savefig(folder + '/confirmed_daily_normalized.pdf', format='pdf', dpi='800')
     plt.close()
 
-def plot_confirmed_daily_norm_timeshift(covid_df, folder, min_confirmed_rate=0., min_population=0, req_areas=[], global_cases=True):
+def plot_confirmed_daily_norm_timeshift(covid_df, folder, min_confirmed_rate=0., min_population=0, req_areas=[], global_cases=True, mov_avg_horizon=1):
     if global_cases:
         index = covid_df.columns.tolist()[-3]
     else:
         index = covid_df.columns.tolist()[-2]
     x_plot, plot_df = prepare_daily_data(index, min_confirmed_rate, min_population, covid_df, req_areas=req_areas, global_cases=global_cases, normalize=True)
+    x_plot = x_plot[mov_avg_horizon - 1:]
     country_lst = plot_df.index.tolist()
     x, y = [], []
     for ii, c in enumerate(country_lst):
         y_plot = np.array(plot_df.loc[c, (slice(None), 'confirmed, daily')].tolist())
+        y_plot = moving_average(y_plot, n=mov_avg_horizon)
         start_ind = np.min(np.where(y_plot >= 0.01))
         x.append(x_plot[start_ind+1:])
         y.append(y_plot[start_ind:])
@@ -365,24 +376,26 @@ def plot_confirmed_daily_norm_timeshift(covid_df, folder, min_confirmed_rate=0.,
 
     plt.xlabel('Date')
     plt.ylabel('New cases per 1000 inhabitants')
-    plt.title('Daily new cases per 1000 inhabitants, countries with more than ' + str(min_confirmed_rate) + ' cases per 1000 inhabitants, timeshifted')
+    plt.title('Daily new cases per 1000 inhabitants, countries with more than ' + str(min_confirmed_rate) + ' cases per 1000 inhabitants, timeshifted, ' + str(mov_avg_horizon) + ' step moving average')
     plt.legend(loc='upper left')
     plt.grid()
     plt.tight_layout()
     plt.savefig(folder + '/confirmed_daily_normalized_timeshifted.pdf', format='pdf', dpi='800')
     plt.close()
 
-def plot_fatal_daily(covid_df, folder, min_fatal_rate=0., min_population=0, req_areas=[], global_cases=True):
+def plot_fatal_daily(covid_df, folder, min_fatal_rate=0., min_population=0, req_areas=[], global_cases=True, mov_avg_horizon=1):
     if global_cases:
         index = covid_df.columns.tolist()[-2]
     else:
         index = covid_df.columns.tolist()[-1]
     x_plot, plot_df = prepare_daily_data(index, min_fatal_rate, min_population, covid_df, req_areas=req_areas, global_cases=global_cases)
+    x_plot = x_plot[mov_avg_horizon - 1:]
     country_lst = plot_df.index.tolist()
 
     plt.figure(figsize=(19,12))
     for c in country_lst:
         y_plot = np.array(plot_df.loc[c, (slice(None), 'fatal, daily')].tolist())
+        y_plot = moving_average(y_plot, n=mov_avg_horizon)
         try:
             start_ind = np.min(np.where(y_plot >= 0.0001))
         except:
@@ -394,24 +407,26 @@ def plot_fatal_daily(covid_df, folder, min_fatal_rate=0., min_population=0, req_
         plt.plot(x_plot[start_ind+1:], y_plot[start_ind:], lw=lw, label=c)
     plt.xlabel('Date')
     plt.ylabel('Daily new fatalities')
-    plt.title('Daily new fatal cases, countries with more than ' + str(min_fatal_rate) + ' fatalities per 1000 inhabitants')
+    plt.title('Daily new fatal cases, countries with more than ' + str(min_fatal_rate) + ' fatalities per 1000 inhabitants, ' + str(mov_avg_horizon) + ' step moving average')
     plt.legend(loc='upper left')
     plt.grid()
     plt.tight_layout()
     plt.savefig(folder + '/fatal_daily.pdf', format='pdf', dpi='800')
     plt.close()
 
-def plot_fatal_daily_norm(covid_df, folder, min_fatal_rate=0., min_population=0, req_areas=[], global_cases=True):
+def plot_fatal_daily_norm(covid_df, folder, min_fatal_rate=0., min_population=0, req_areas=[], global_cases=True, mov_avg_horizon=1):
     if global_cases:
         index = covid_df.columns.tolist()[-2]
     else:
         index = covid_df.columns.tolist()[-1]
     x_plot, plot_df = prepare_daily_data(index, min_fatal_rate, min_population, covid_df, req_areas=req_areas, global_cases=global_cases, normalize=True)
+    x_plot = x_plot[mov_avg_horizon - 1:]
     country_lst = plot_df.index.tolist()
 
     plt.figure(figsize=(19,12))
     for c in country_lst:
         y_plot = np.array(plot_df.loc[c, (slice(None), 'fatal, daily')].tolist())
+        y_plot = moving_average(y_plot, n=mov_avg_horizon)
         try:
             start_ind = np.min(np.where(y_plot >= 0.0001))
         except:
@@ -423,23 +438,25 @@ def plot_fatal_daily_norm(covid_df, folder, min_fatal_rate=0., min_population=0,
         plt.plot(x_plot[start_ind+1:], y_plot[start_ind:], lw=lw, label=c)
     plt.xlabel('Date')
     plt.ylabel('Daily new fatalities per 1000 inhabitants')
-    plt.title('Daily new fatal cases per 1000 inhabitants, countries with more than ' + str(min_fatal_rate) + ' fatalities per 1000 inhabitants')
+    plt.title('Daily new fatal cases per 1000 inhabitants, countries with more than ' + str(min_fatal_rate) + ' fatalities per 1000 inhabitants, ' + str(mov_avg_horizon) + ' step moving average')
     plt.legend(loc='upper left')
     plt.grid()
     plt.tight_layout()
     plt.savefig(folder + '/fatal_daily_normalized.pdf', format='pdf', dpi='800')
     plt.close()
 
-def plot_fatal_daily_norm_timeshift(covid_df, folder, min_fatal_rate=0., min_population=0, req_areas=[], global_cases=True):
+def plot_fatal_daily_norm_timeshift(covid_df, folder, min_fatal_rate=0., min_population=0, req_areas=[], global_cases=True, mov_avg_horizon=1):
     if global_cases:
         index = covid_df.columns.tolist()[-2]
     else:
         index = covid_df.columns.tolist()[-1]
     x_plot, plot_df = prepare_daily_data(index, min_fatal_rate, min_population, covid_df, req_areas=req_areas, global_cases=global_cases, normalize=True)
+    x_plot = x_plot[mov_avg_horizon - 1:]
     country_lst = plot_df.index.tolist()
     x, y = [], []
     for ii, c in enumerate(country_lst):
         y_plot = np.array(plot_df.loc[c, (slice(None), 'fatal, daily')].tolist())
+        y_plot = moving_average(y_plot, n=mov_avg_horizon)
         try:
             start_ind = np.min(np.where(y_plot >= 0.0001))
         except:
@@ -459,7 +476,7 @@ def plot_fatal_daily_norm_timeshift(covid_df, folder, min_fatal_rate=0., min_pop
 
     plt.xlabel('Date')
     plt.ylabel('Daily new fatalities per 1000 inhabitants')
-    plt.title('Daily new fatal cases per 1000 inhabitants, countries with more than ' + str(min_fatal_rate) + ' fatalities per 1000 inhabitants, timeshifted')
+    plt.title('Daily new fatal cases per 1000 inhabitants, countries with more than ' + str(min_fatal_rate) + ' fatalities per 1000 inhabitants, timeshifted, ' + str(mov_avg_horizon) + ' step moving average')
     plt.legend(loc='upper left')
     plt.grid()
     plt.tight_layout()
