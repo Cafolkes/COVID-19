@@ -37,15 +37,19 @@ covid_data = CovidData(time_series_folder=time_series_folder,
 covid_data.build_master_dfs()
 
 date_str = str(date.today())
-folder_global = 'plots/' + date_str + '/global'
-folder_us = 'plots/' + date_str + '/us'
-Path(folder_global).mkdir(parents=True, exist_ok=True)
-Path(folder_us).mkdir(parents=True, exist_ok=True)
+folder_global_accu = 'plots/' + date_str + '/global/accumulated'
+folder_global_daily = 'plots/' + date_str + '/global/daily'
+folder_us_accu = 'plots/' + date_str + '/us/accumulated'
+folder_us_daily = 'plots/' + date_str + '/us/daily'
+Path(folder_global_accu).mkdir(parents=True, exist_ok=True)
+Path(folder_global_daily).mkdir(parents=True, exist_ok=True)
+Path(folder_us_accu).mkdir(parents=True, exist_ok=True)
+Path(folder_us_daily).mkdir(parents=True, exist_ok=True)
 
 # Plot global cases:
-plot_time_series(covid_data.covid_data_global, folder_global, min_confirmed_rate=min_confirmed_rate, min_fatal_rate=min_fatal_rate, min_population=min_population, req_areas=req_countries)
-plot_daily(covid_data.covid_data_global, folder_global, min_confirmed_rate=min_confirmed_rate, min_fatal_rate=min_fatal_rate, min_population=min_population, req_areas=req_countries, mov_avg_horizon=mov_avg_horizon)
+plot_time_series(covid_data.covid_data_global, folder_global_accu, min_confirmed_rate=min_confirmed_rate, min_fatal_rate=min_fatal_rate, min_population=min_population, req_areas=req_countries)
+plot_daily(covid_data.covid_data_global, folder_global_daily, min_confirmed_rate=min_confirmed_rate, min_fatal_rate=min_fatal_rate, min_population=min_population, req_areas=req_countries, mov_avg_horizon=mov_avg_horizon)
 
 # Plot us cases:
-plot_time_series(covid_data.covid_data_us, folder_us, min_confirmed_rate=min_confirmed_rate_us, min_fatal_rate=min_fatal_rate_us, min_population=min_population, req_areas=req_states, global_cases=False)
-plot_daily(covid_data.covid_data_us, folder_us, min_confirmed_rate=min_confirmed_rate_us, min_fatal_rate=min_fatal_rate_us, min_population=min_population, req_areas=req_states, global_cases=False, mov_avg_horizon=mov_avg_horizon)
+plot_time_series(covid_data.covid_data_us, folder_us_accu, min_confirmed_rate=min_confirmed_rate_us, min_fatal_rate=min_fatal_rate_us, min_population=min_population, req_areas=req_states, global_cases=False)
+plot_daily(covid_data.covid_data_us, folder_us_daily, min_confirmed_rate=min_confirmed_rate_us, min_fatal_rate=min_fatal_rate_us, min_population=min_population, req_areas=req_states, global_cases=False, mov_avg_horizon=mov_avg_horizon)
