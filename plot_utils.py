@@ -129,7 +129,7 @@ def plot_confirmed(covid_df, folder, min_confirmed_rate=0., min_population=0, re
         if c in req_areas:
             lw = 3
         else:
-            lw = 1.0
+            lw = 1.5
         plt.plot(x_plot[start_ind:], y_plot[start_ind:], lw=lw, label=c)
     plt.xlabel('Date')
     plt.ylabel('Confirmed cases')
@@ -155,7 +155,7 @@ def plot_confirmed_norm(covid_df, folder, min_confirmed_rate=0., min_population=
         if c in req_areas:
             lw = 3
         else:
-            lw = 1.0
+            lw = 1.5
         plt.plot(x_plot[start_ind:], y_plot[start_ind:], lw=lw, label=c)
     plt.xlabel('Date')
     plt.ylabel('Confirmed cases per 1000 inhabitants')
@@ -187,7 +187,7 @@ def plot_confirmed_timeshift(covid_df, folder, min_confirmed_rate=0., min_popula
         if c in req_areas:
             lw = 3
         else:
-            lw = 1.0
+            lw = 1.5
         plt.plot(x_plt, y_plt, lw=lw, label=c + ', day 0 = ' + str(x[ii][0].date()))
     plt.xlabel('Days after day 0')
     plt.ylabel('Confirmed cases per 1000 inhabitants')
@@ -216,7 +216,7 @@ def plot_fatal(covid_df, folder, min_fatal_rate=0., min_population=0., req_areas
         if c in req_areas:
             lw = 3
         else:
-            lw = 1.0
+            lw = 1.5
         plt.plot(x_plot[start_ind:], y_plot[start_ind:], lw=lw, label=c)
     plt.xlabel('Date')
     plt.ylabel('Fatalities per 1000 inhabitants')
@@ -245,7 +245,7 @@ def plot_fatal_norm(covid_df, folder, min_fatal_rate=0., min_population=0., req_
         if c in req_areas:
             lw = 3
         else:
-            lw = 1.0
+            lw = 1.5
         plt.plot(x_plot[start_ind:], y_plot[start_ind:], lw=lw, label=c)
     plt.xlabel('Date')
     plt.ylabel('Fatalities per 1000 inhabitants')
@@ -281,7 +281,7 @@ def plot_fatal_timeshift(covid_df, folder, min_fatal_rate=0., min_population=0.,
         if c in req_areas:
             lw = 3
         else:
-            lw = 1.0
+            lw = 1.5
         plt.plot(x_plt, y_plt, lw=lw, label=c + ', day 0 = ' + str(x[ii][0].date()))
     plt.xlabel('Days after day 0')
     plt.ylabel('Fatalities per 1000 inhabitants')
@@ -309,7 +309,7 @@ def plot_confirmed_daily(covid_df, folder, min_confirmed_rate=0., min_population
         if c in req_areas:
             lw = 3
         else:
-            lw = 1.0
+            lw = 1.5
         plt.plot(x_plot[start_ind+1:], y_plot[start_ind:], lw=lw, label=c)
     plt.xlabel('Date')
     plt.ylabel('Daily new cases')
@@ -337,7 +337,7 @@ def plot_confirmed_daily_norm(covid_df, folder, min_confirmed_rate=0., min_popul
         if c in req_areas:
             lw = 3
         else:
-            lw = 1.0
+            lw = 1.5
         plt.plot(x_plot[start_ind+1:], y_plot[start_ind:], lw=lw, label=c)
     plt.xlabel('Date')
     plt.ylabel('New cases per 1000 inhabitants')
@@ -371,7 +371,7 @@ def plot_confirmed_daily_norm_timeshift(covid_df, folder, min_confirmed_rate=0.,
         if c in req_areas:
             lw = 3
         else:
-            lw = 1.0
+            lw = 1.5
         plt.plot(x_plt, y_plt, lw=lw, label=c + ', day 0 = ' + str(x[ii][0].date()))
 
     plt.xlabel('Date')
@@ -403,7 +403,7 @@ def plot_fatal_daily(covid_df, folder, min_fatal_rate=0., min_population=0, req_
         if c in req_areas:
             lw = 3
         else:
-            lw = 1.0
+            lw = 1.5
         plt.plot(x_plot[start_ind+1:], y_plot[start_ind:], lw=lw, label=c)
     plt.xlabel('Date')
     plt.ylabel('Daily new fatalities')
@@ -434,7 +434,7 @@ def plot_fatal_daily_norm(covid_df, folder, min_fatal_rate=0., min_population=0,
         if c in req_areas:
             lw = 3
         else:
-            lw = 1.0
+            lw = 1.5
         plt.plot(x_plot[start_ind+1:], y_plot[start_ind:], lw=lw, label=c)
     plt.xlabel('Date')
     plt.ylabel('Daily new fatalities per 1000 inhabitants')
@@ -471,7 +471,7 @@ def plot_fatal_daily_norm_timeshift(covid_df, folder, min_fatal_rate=0., min_pop
         if c in req_areas:
             lw = 3
         else:
-            lw = 1.0
+            lw = 1.5
         plt.plot(x_plt, y_plt, lw=lw, label=c + ', day 0 = ' + str(x[ii][0].date()))
 
     plt.xlabel('Date')
