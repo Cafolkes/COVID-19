@@ -16,10 +16,10 @@ population_global = 'un_world_population_2019.csv'
 population_us = 'us_states_census.csv'
 
 # Data analysis parameters:
-min_confirmed_rate = 2.                     # Minimum rate of confirmed cases (confirmed/1000 inhabitants)
-min_fatal_rate = 0.1                        # Minimum rate of fatal (fatal/1000 inhabitants)
-min_confirmed_rate_us = 2.                     # Minimum rate of confirmed cases (confirmed/1000 inhabitants)
-min_fatal_rate_us = 0.1                        # Minimum rate of fatal (fatal/1000 inhabitants)
+min_confirmed_rate = 5.                     # Minimum rate of confirmed cases (confirmed/1000 inhabitants)
+min_fatal_rate = 0.5                        # Minimum rate of fatal (fatal/1000 inhabitants)
+min_confirmed_rate_us = 5.                     # Minimum rate of confirmed cases (confirmed/1000 inhabitants)
+min_fatal_rate_us = 0.5                        # Minimum rate of fatal (fatal/1000 inhabitants)
 min_population = 1e6                        # Minimum population of analyzed countries/states
 req_countries = ['Norway', 'Sweden', 'Denmark', 'United States of America']
 req_states = ['California', 'Washington', 'New York']
